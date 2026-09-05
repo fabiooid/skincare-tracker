@@ -20,6 +20,7 @@ import {
   verifyAppToken,
   type AuthUser,
 } from '../../lib/auth.js'
+import { isOpenAiApiKeyConfigured, MISSING_OPENAI_KEY_ERROR } from '../../lib/openai.js'
 import {
   commitNewVersion,
   createProduct,
@@ -534,6 +535,9 @@ export async function agentGateMiddleware(
       },
       402,
     )
+  }
+  if (!isOpenAiApiKeyConfigured()) {
+    return c.json(MISSING_OPENAI_KEY_ERROR, 503)
   }
 
   // The client sends its own requestContext in the body, and Mastra has already
