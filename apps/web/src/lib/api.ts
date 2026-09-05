@@ -431,7 +431,9 @@ export const api = {
     },
     onChunk: (text: string) => void,
   ) => {
-    const requestContext: Record<string, string> = { userId: input.userId }
+    // No userId here: the API derives it from the bearer token and overwrites
+    // whatever the payload claims. Only the on-screen context travels with the call.
+    const requestContext: Record<string, string> = {}
     if (input.productId) requestContext.productId = input.productId
     if (input.variantId) requestContext.variantId = input.variantId
 

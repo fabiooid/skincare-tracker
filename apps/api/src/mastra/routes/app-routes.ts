@@ -1,4 +1,5 @@
 import { registerApiRoute } from '@mastra/core/server'
+import { MASTRA_RESOURCE_ID_KEY } from '@mastra/core/request-context'
 import { z } from 'zod'
 import {
   FormulaRowSchema,
@@ -58,6 +59,10 @@ type HonoLike = {
   json: (body: unknown, status?: number) => Response
 }
 
+type AgentRequestContext = { set: (key: string, value: unknown) => void }
+
+type BearerContext = { req: { header: (name: string) => string | undefined } }
+
 const productNameSchema = z.string().trim().min(1).max(120)
 const organizationNameSchema = z.string().trim().min(1).max(80)
 const ingredientInputSchema = z.object({
@@ -74,13 +79,13 @@ const ingredientInputSchema = z.object({
   notes: z.string().trim().max(500).optional().nullable(),
 })
 
-function getBearer(c: Pick<HonoLike, 'req'>) {
+function getBearer(c: BearerContext) {
   const header = c.req.header('authorization')
   if (!header?.startsWith('Bearer ')) return null
   return header.slice(7)
 }
 
-async function requireUser(c: Pick<HonoLike, 'req'>): Promise<AuthUser | null> {
+async function requireUser(c: BearerContext): Promise<AuthUser | null> {
   const token = getBearer(c)
   if (!token) return null
   return verifyAppToken(token)
@@ -511,7 +516,11 @@ export const appRoutes = [
 ]
 
 export async function agentGateMiddleware(
-  c: { req: { header: (name: string) => string | undefined }; json: (body: unknown, status?: number) => Response },
+  c: {
+    req: { header: (name: string) => string | undefined }
+    json: (body: unknown, status?: number) => Response
+    get: (key: 'requestContext') => AgentRequestContext | undefined
+  },
   next: () => Promise<void>,
 ) {
   const user = await requireUser(c)
@@ -526,5 +535,13 @@ export async function agentGateMiddleware(
       402,
     )
   }
+
+  // The client sends its own requestContext in the body, and Mastra has already
+  // merged it in by the time we run. Overwrite the identity keys from the verified
+  // token so a caller cannot address another person's data by editing the payload.
+  const requestContext = c.get('requestContext')
+  requestContext?.set('userId', user.id)
+  requestContext?.set(MASTRA_RESOURCE_ID_KEY, user.id)
+
   await next()
 }

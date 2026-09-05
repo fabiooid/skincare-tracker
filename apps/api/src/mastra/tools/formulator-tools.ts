@@ -11,6 +11,7 @@ import {
   getCurrentVersionForVariant,
   getFormulaRows,
   getProductForUser,
+  getVariant,
   getWorkspace,
   listProducts,
   loadRules,
@@ -67,7 +68,12 @@ async function resolveProductId(
 }
 
 async function resolveVariantId(productId: string, userId: string, variantId?: string) {
-  if (variantId) return variantId
+  // A variant id can arrive from the model or the page context, so confirm it
+  // belongs to this product before it reaches a read or a patch.
+  if (variantId) {
+    const variant = await getVariant(variantId, productId)
+    if (variant) return variant.id
+  }
   const workspace = await getWorkspace(productId, userId)
   return workspace?.activeVariantId ?? workspace?.variants[0]?.variant.id
 }
