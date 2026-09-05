@@ -53,7 +53,7 @@ import {
 import { getHomeDashboard } from '../../services/home.js'
 import { listPendingProposals, resolveProposal } from '../../services/proposals.js'
 import { createFeedback } from '../../services/feedback.js'
-import { resolveOpenAiApiKey } from '../openai-model.js'
+import { hasFormulatorLlmKey } from '../formulator-model.js'
 
 type HonoLike = {
   req: { header: (name: string) => string | undefined; json: () => Promise<unknown>; param: (name: string) => string }
@@ -537,13 +537,13 @@ export async function agentGateMiddleware(
     )
   }
 
-  if (!resolveOpenAiApiKey()) {
+  if (!hasFormulatorLlmKey()) {
     return c.json(
       {
-        error: 'OPENAI_API_KEY is not set',
-        code: 'OPENAI_NOT_CONFIGURED',
+        error: 'No LLM key is set',
+        code: 'LLM_NOT_CONFIGURED',
         message:
-          'Set OPENAI_API_KEY to use the formulator. Get a key at https://platform.openai.com/api-keys',
+          'Set GEMINI_API_KEY to use the formulator (https://aistudio.google.com/app/apikey). OPENAI_API_KEY is an optional fallback.',
       },
       503,
     )

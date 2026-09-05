@@ -1,6 +1,6 @@
 import { Agent } from '@mastra/core/agent'
 import { Memory } from '@mastra/memory'
-import { resolveFormulatorModel } from '../openai-model.js'
+import { resolveFormulatorModel } from '../formulator-model.js'
 import { formulatorTools } from '../tools/formulator-tools.js'
 
 const INSTRUCTIONS = `You are a cosmetics formulator and regulatory research assistant for indie skincare and perfume founders.

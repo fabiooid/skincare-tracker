@@ -25,7 +25,7 @@ The agent is a side pane you can open from any signed-in page (sparkle in the br
 ## Prerequisites
 
 - Node.js **≥ 22.13**
-- `OPENAI_API_KEY` (only needed for the paid agent feature). Get a key from https://platform.openai.com/api-keys
+- `GEMINI_API_KEY` (only needed for the paid agent feature). Get a key from https://aistudio.google.com/app/apikey. `OPENAI_API_KEY` is an optional fallback.
 
 ## Quick start
 
@@ -65,8 +65,10 @@ npm run dev
 
 | Variable | Description |
 |---|---|
-| `OPENAI_API_KEY` | OpenAI key for the formulator agent. Get one at https://platform.openai.com/api-keys |
-| `OPENAI_MODEL` | Optional Mastra model id. Default `openai/gpt-4o-mini`. A bare name like `gpt-4o-mini` also works. |
+| `GEMINI_API_KEY` | Primary key for the formulator agent. Get one at https://aistudio.google.com/app/apikey |
+| `GEMINI_MODEL` | Optional. Default `google/gemini-2.5-flash`. A bare name like `gemini-2.5-flash` also works. |
+| `OPENAI_API_KEY` | Fallback key if Gemini is missing or fails. Get one at https://platform.openai.com/api-keys |
+| `OPENAI_MODEL` | Optional. Default `openai/gpt-4o-mini`. A bare name like `gpt-4o-mini` also works. |
 | `MASTRA_JWT_SECRET` | JWT signing secret (app auth + API) |
 | `DATABASE_URL` | SQLite path, default `file:./data/app.db` |
 | `PORT` | Mastra API port, default `4111` |
@@ -81,7 +83,7 @@ npm run dev
 | `npm run db:migrate` | Run Drizzle migrations |
 | `npm run db:seed` | Seed rules + demo products |
 | `npm run db:setup` | Migrate + seed |
-| `npm run test` | Domain tests and OpenAI model helper tests |
+| `npm run test` | Domain tests and formulator model helper tests |
 
 ## Project layout
 
