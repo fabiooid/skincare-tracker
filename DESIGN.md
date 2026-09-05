@@ -1,0 +1,372 @@
+# Atelier design rules
+
+Living reference for how the product should look and feel. Update this file when we change a pattern, so the next screen matches the ones we already have.
+
+Product name in the UI: **Atelier**.
+
+## What it should feel like
+
+Calm, dense, and formula-first. This is a quiet lab notebook for indie skincare and perfume — not a chat app, not a marketing site, not a dashboard full of charts.
+
+- The **formula table** is the source of truth. Chat proposes. The person commits.
+- Surfaces stay quiet. Color, motion, and decoration are used sparingly.
+- Everything should feel like it belongs to the same product: same spacing, same cards, same buttons, same words.
+
+Core principles: **consistency**, **reuse**, **continuity**. Prefer an existing pattern over a new one.
+
+## Stack we build on
+
+- shadcn/ui, **Vega** style, **neutral** base, **Lucide** icons
+- Tailwind with CSS variables in `apps/web/src/index.css`
+- Primitive components live in `apps/web/src/components/ui/`
+- App patterns live next to pages in `apps/web/src/components/`
+
+Do not invent a second visual system. Extend what is already here.
+
+---
+
+## Color
+
+Use **semantic tokens** only (`bg-background`, `text-muted-foreground`, `border-border`). Never pick a raw Tailwind color like `bg-blue-500` or `text-purple-600`.
+
+Light mode is warm paper with cool ink. Dark mode is the same idea, inverted: cool ink surfaces, light type.
+
+| Token | Use for |
+|---|---|
+| `background` | Page canvas |
+| `foreground` | Main text and primary buttons |
+| `card` / `popover` | Raised surfaces |
+| `muted` / `muted-foreground` | Quiet fills and secondary text |
+| `border` / `input` | Lines and field edges |
+| `primary` | Main actions (near-black in light, near-white in dark) |
+| `accent-brand` | Sparse brand moments only (focus tint, sparkle) |
+| `destructive` | Errors, bans, delete, sign out |
+| `sidebar*` | Sidebar only |
+
+**Brand violet** (`accent-brand`) is an accent, not a fill. Do not paint large blocks with it.
+
+**Status colors**
+
+| Status | Badge |
+|---|---|
+| banned | `destructive` |
+| restricted | `secondary` |
+| unknown | `outline` |
+| sellable | `secondary` |
+
+**Warning:** a formula that does not add up to ~100% uses amber text (`text-amber-600`). That is the only allowed raw color. Do not spread amber elsewhere — if we need a real warning token later, add it in CSS first.
+
+Text selection uses a soft brand tint (`--accent-brand-muted`).
+
+Both light and dark are first-class. The theme switcher lives in the user menu and on Settings. Press **D** (when not typing) to flip light/dark.
+
+---
+
+## Type
+
+- **UI text:** Geist Variable (`font-sans`)
+- **Formulas, INCI, percents, agent replies:** Geist Mono (`font-mono`)
+- Antialiased. Headings use the same family as body — no second display font.
+
+| Role | Size | Weight |
+|---|---|---|
+| Page title (`PageHeader`) | `text-2xl` / `sm:text-[1.75rem]` | `font-semibold` |
+| Section title (`WorkspaceSection`, formula) | `text-lg` | `font-semibold` |
+| Card title | `text-base` | `font-medium` |
+| Body, forms, tables | `text-sm` | regular |
+| Meta, hints, table headers | `text-xs` | `font-medium` or muted |
+| Loading / empty helper | `text-sm text-muted-foreground` | regular |
+
+Tracking stays mostly `tracking-normal`. Product names may use `tracking-tight`. Table column headers are `uppercase tracking-wide`.
+
+Page descriptions: `text-sm leading-relaxed text-muted-foreground`, max width `max-w-2xl`.
+
+---
+
+## Space, radius, shadow
+
+**Page**
+
+- App chrome: sidebar + main. No separate page navbar.
+- Main padding: `px-4` → `sm:px-6` → `lg:px-10`, extra space at the bottom (`pb-16` / `sm:pb-20`) so the last block is not cut off
+- Content width: fluid and full-width by default, with comfortable side padding. Wide workspaces may cap at `max-w-[90rem]`. Must shrink (`min-w-0`) so nothing blows past the window.
+- Breadcrumb sits at the top of the page content (same width and padding) and scrolls with the page. Page title (`PageHeader`) follows it. The agent launcher (sparkle) sits on the right of this row.
+- Vertical stacks: `gap-4` inside a section, `gap-6` on a page of cards, `gap-8` between the brief prompt and the formula below
+- Prefer `gap-*` over `space-y-*`
+
+**Sidebar**
+
+- Expanded: `w-60` (240px)
+- Collapsed: `w-14`
+- Remembers collapsed state
+- On small screens it is an overlay, not a persistent column
+
+**Agent pane**
+
+The formulator agent is app chrome, not a page and not a card on the formula step.
+
+- Closed (default): sparkle button in the breadcrumb row. Shortcut **⌘J** / **Ctrl+J**. Escape closes the pane.
+- Side pane: default `w-[22rem]` on the right of the page. Drag the left edge to resize; a handle appears on hover. Remembers width. Left nav stays. Page content shrinks.
+- Full window: chat fills the main area; left nav stays. Collapse returns to the side pane.
+- On small screens, open goes straight to full screen (no side column).
+- Remembers closed / pane / full, like the left nav.
+- Header: title, short context line (“Working on {product}” or “Any product or stock”), expand/collapse, close.
+- Conversation uses MessageScroller, Message, Bubble, Marker, Attachment. Composer is textarea + Send at the bottom.
+- Paid gate: same pane, `EmptyState` inside — do not hide the chrome.
+- Chat proposes stock edits, new products, and formula patches. The person accepts. Formula accept/reject stays next to the table. Stock and new-product accept/reject sit on Attachment cards in the thread.
+
+**Radius** (`--radius: 0.5rem`)
+
+| Surface | Radius |
+|---|---|
+| Buttons, inputs, nav items, dialogs | `rounded-lg` |
+| Cards, empty states, list containers | `rounded-xl` |
+| Badges, avatars, completed steps | `rounded-full` |
+| Compact toggles / icon buttons | `rounded-md` |
+
+**Shadow**
+
+- Resting cards and outline buttons: `shadow-soft`
+- Hover on clickable cards: `shadow-soft-hover`
+- Keep shadows quiet. No heavy drop shadows, no glow.
+
+**Background texture**
+
+The dotted grid (`28px`) covers the **whole page**, including behind the sidebar. Do not add extra textures, gradients, or photos behind content.
+
+The sidebar sits on a frosted fill (`bg-sidebar/80` + light blur) so the grid shows through softly.
+
+Page content is fluid and fills the available width. The in-page breadcrumb uses that same width so it lines up with the title.
+
+---
+
+## Motion
+
+Short and boring.
+
+- Color / hover: `duration-150`
+- Sidebar width / slide: `duration-200 ease-out`
+- Agent pane open / close / expand: same `duration-200 ease-out` (no motion while dragging the resize handle)
+- Collapsible height: `duration-200 ease-out` (height 0 ↔ content)
+- Overlay fade (mobile menu): `duration-200 ease-out`
+- Chevrons on expand triggers: rotate `duration-200 ease-out`
+- Dialogs and menus: fade + slight zoom, `duration-100`
+- Card hover: `duration-200`
+
+Do not add bounce, large slide-ins, or decorative animation. Theme changes should not flash (transitions are disabled while the class swaps). Honor `prefers-reduced-motion` with `motion-reduce:transition-none` on chrome collapse.
+
+---
+
+## Icons
+
+Lucide only. Default size `size-4`. Compact chrome (logo, theme, chevrons) uses `size-3.5`.
+
+Put icons **before** the label. On shadcn buttons, mark them:
+
+```tsx
+<PlusIcon data-icon="inline-start" />
+```
+
+Icon-only buttons need an `aria-label` (and `title` when the sidebar is collapsed).
+
+---
+
+## Layout recipes
+
+### App pages (signed in)
+
+Use `AppShell` + `PageHeader`. Do not rebuild the chrome.
+
+```tsx
+<AppShell title={t('nav.products')}>
+  <PageHeader
+    title={t('products.title')}
+    description={t('products.subtitle')}
+    actions={/* buttons */}
+  />
+  {/* content */}
+</AppShell>
+```
+
+Breadcrumb (in the page, above `PageHeader`): muted app name / current page title. App name links home. On Settings, insert a muted Settings segment in the middle. On small screens, the menu button sits in this row.
+
+### Auth
+
+Centered card (`max-w-[400px]`) on the dotted grid. Logo + name top-left, theme control top-right. Full-width primary submit. Link to the other auth page under the button.
+
+### Settings
+
+Settings is a mode of the left nav, not a second menu on the page. While in Settings, the sidebar stays expanded: no logo, no product name, no collapse control, and no org switcher. A back arrow sits in the header. The list is Account, Appearance, Language, Plan, Organisation. Back leaves Settings and returns to the last app page.
+
+One route per topic (`/settings/account`, and so on). `/settings` opens Account. `PageHeader` then a **narrow stack** of cards (`max-w-lg`, `gap-4`). One topic per card.
+
+The formulator sparkle is hidden here. Breadcrumb: app name / Settings / current topic.
+
+### Product list
+
+Header actions, right side: view switcher, then primary **New from brief**.
+
+- **Cards** (default): 1 / 2 / 3 columns (`grid gap-4 sm:grid-cols-2 lg:grid-cols-3`). Same meta on every card: type badge, stage badge, markets.
+- **List:** one bordered card wrapping rows (`rounded-xl border-border/70 shadow-soft`). Each row is a link. Same meta as cards.
+- Remember the last view in `localStorage`.
+- On small screens the switcher shows icons only.
+
+### Home
+
+A morning brief, not a metrics wall. Same cards as everywhere else.
+
+1. Three small numbers: shelf value, to-purchase count, formulas with a full cost
+2. Two working lists: to purchase (with € / kg) and needs attention
+3. Ranked formula cost (`SimpleBarChart`, foreground fill, mono money)
+
+Money and grams use `font-mono tabular-nums`. Shelf value only counts in-house and low stock that have both a price and an amount on hand. Always show coverage so a missing price cannot look like zero.
+
+### Product workspace
+
+Wide shell. Two peer tabs, not a numbered sequence. One column, so the agent pane can open without squeezing two work areas.
+
+- **Workspace** — brief prompt on top, formula table under it. Claims sit under the table, not inside the prompt.
+- **Regulatory** — final INCI, market checks, PIF draft, and references.
+
+The brief is a textarea plus **Generate**. Generate opens the formulator agent with the brief; it does not write the table directly. The person still accepts patches.
+
+Use `WorkspaceSection` for a quiet heading (no step number). Empty regulatory state uses `EmptyState`, not a locked dashed card or a checklist of steps.
+
+Formula table is full width. The agent is not embedded here — it lives in the app chrome.
+
+---
+
+## Components — when to use which
+
+Reuse these. Do not restyle them ad hoc for one screen.
+
+### Buttons
+
+| Variant | When |
+|---|---|
+| `default` | The one main action on a block (Create, Commit, Send, Sign in) |
+| `outline` | Secondary action next to a primary (Add row, Duplicate, Reject) |
+| `ghost` | Quiet chrome (menu, delete in a table, close) |
+| `destructive` | Harmful (sign out). Prefer ghost/destructive in menus, not a red primary in the page. |
+| `link` | Text-only action in a sentence |
+| `secondary` | Rare; muted fill when outline is too weak |
+
+Sizes: `sm` in toolbars and patches, `default` in pages, `icon-sm` for table/chrome icons. One primary button per cluster.
+
+Pending labels: “Saving…”, “Signing in…”, “Thinking…” — same button, disabled.
+
+### Cards
+
+Default grouping for a topic (maceration, settings, product list). `rounded-xl`, `border-border/70`, `shadow-soft`. Brief, formula, and INCI on the product page stay flat — headings, separators, and spacing, not Card-in-Card.
+
+- Card titles are `text-base`, not another page title
+- Optional description is muted `text-sm`
+- Title and description always stack. If there is a header action, it sits to the right until the card is narrow, then it drops under the text. Do not overlap.
+- Clickable cards (product grid): whole card is the link, hover border + `shadow-soft-hover`
+
+### Badges
+
+Pills. `secondary` for type/stage/plan/markets, `outline` for extra/locked info, `destructive` for bans. Use `StatusBadge` for regulatory status so every market chip matches.
+
+### Empty states
+
+Use `EmptyState` (dashed border, centered, quiet). For free-plan gaps, paid-only agent, no products, no INCI, no PIF. Do not invent a custom blank illustration.
+
+### Forms
+
+`FieldGroup` → `Field` → `FieldLabel` → `Input` / `Textarea` / `Select`. Labels are `text-sm font-medium`. Fields are `h-9`, `rounded-lg`. Auth fields may be `h-10`.
+
+Errors: `text-sm text-destructive` under the field. Invalid fields get the destructive border from the primitive — do not add a second error style.
+
+### Dialogs
+
+Small (`sm:max-w-md`), centered, light overlay (`bg-black/10` + slight blur). Title, then fields, then the primary action in the field group. One job per dialog (new product, new organisation).
+
+### Tables
+
+The formula editor is a real table, not a list of cards. Header row `bg-muted/60`, uppercase muted labels, cell borders. Inputs sit flush in cells (`border-0 bg-transparent`). Percents are right-aligned mono. Row numbers are mono.
+
+### Tabs
+
+Use for peer views of the same record. Product page: Workspace / Regulatory at the top. On Regulatory: Markets / PIF / Refs. Use `variant="line"` (word + underline), not the pill / button look.
+
+### Toggle groups
+
+Mutually exclusive view or preference: product cards vs list, light / dark / system. `size="sm"`, `spacing={0}`, outline (or unstyled inside a chrome cluster).
+
+**Claim chips** are the exception: vegan / natural / organic can all be on at once (`multiple`). Same outline toggle on create and under the formula table. Product cards show the selected claims as outline badges.
+
+### Menus
+
+User menu and org switcher: `w-56`, avatar/initials in a 28px square, same hover as sidebar nav. Destructive items at the bottom.
+
+### Toasts
+
+Sonner, themed with popover colors. Use for short confirmations later; do not toast every save if the button already says “Saving…”.
+
+---
+
+## Sidebar & navigation
+
+- Logo: simple triangle mark, product name beside it. Icon only — no fill, border, or card. Do not put the resting logo inside a button-like card.
+- Active item: muted fill only
+- Inactive: `text-muted-foreground`, hover to foreground on a light accent fill
+- Pinned products under a tiny muted heading (“Pinned”). Hide the block if nothing is pinned, and while in Settings.
+- Account lives at the **bottom**. On desktop, hover the sidebar to turn the logo mark into collapse / expand.
+- Collapsed: icons only, `title` tooltip, menus open to the right
+- Settings mode reuses this same nav, always expanded. No logo, no org switcher, no collapse. Do not add a second in-page settings menu.
+
+Do not add a second nav in the page. The in-page breadcrumb is location, not a duplicate of the sidebar. On small screens the menu button lives in that breadcrumb row.
+
+---
+
+## Copy
+
+Plain, short, calm. No hype, no emoji in product UI, no “AI-powered” language.
+
+- All visible strings go through i18n (`en`, `fr`, `it`). Do not hardcode English in components.
+- Loading: “Loading…”
+- Empty: a title + one sentence of what to do next
+- Compliance honesty: never say a formula is legally on the market. Unknown INCI stays “unknown”.
+- Formula is “committed”, patches are “accepted” or “rejected”.
+- Claims always include a visible “No claims” state. Empty claims should feel intentional, not missing.
+
+---
+
+## Interaction details worth keeping
+
+- **Inline rename:** the workspace title is an input that looks like a heading until hover/focus (`hover:bg-muted/50`, ring on focus). Enter saves, Escape cancels, empty blur restores the old name.
+- **Remembered chrome:** sidebar collapsed, product view (cards/list), theme, language.
+- **Locked formula rows:** cannot edit, cannot delete. Show the lock icon.
+- **Paid gates:** same layout, `EmptyState` inside — do not hide the panel entirely. Agent pane included.
+- **Empty regulatory / PIF / INCI:** `EmptyState` with a short next step. Do not use a numbered checklist to unlock a tab.
+
+---
+
+## Accessibility
+
+- Visible focus ring (`ring` / `ring-ring/50`). Do not remove it.
+- Icon-only controls have names.
+- Do not use color alone for status — badge text is required.
+- Mobile menu overlay is dismissible (click outside, Escape). Agent pane is dismissible the same way (Escape, close).
+- Hit targets in chrome stay at least 28–32px.
+
+---
+
+## How to add something new
+
+1. Find the closest existing screen and copy its structure (`AppShell`, `PageHeader`, `Card`, `EmptyState`).
+2. Use tokens and primitives. If you need a new color or radius, add it in `index.css` first, then use it everywhere.
+3. If a pattern will be used twice, put it in `components/` (like `PageHeader`, `EmptyState`, `StatusBadge`). Do not fork a one-off.
+4. Add copy to **all three** language files.
+5. Check light **and** dark, and a narrow screen.
+6. Update this file if the new pattern should become the default.
+
+## Do not
+
+- Center the product around chat
+- Introduce a second font, icon set, or button style
+- Use large brand-colored banners
+- Mix cards and a custom “panel” look for the same kind of content
+- Skip empty, loading, locked, and error states
+- Change only one instance of a pattern (if list rows change, product cards should still match)

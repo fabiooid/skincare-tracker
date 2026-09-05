@@ -1,0 +1,18 @@
+---
+description: Follow Atelier UI patterns when changing the web app
+globs: apps/web/**/*.{tsx,css}
+alwaysApply: false
+---
+
+# Atelier UI
+
+Read `DESIGN.md` before changing layout, styling, or components. Match existing screens. Do not invent a new look.
+
+- Calm, dense, formula-first. Chat is secondary.
+- Reuse `AppShell`, `PageHeader`, `Card`, `Button`, `EmptyState`, `FieldGroup`, `StatusBadge`.
+- Semantic tokens only (`bg-background`, `text-muted-foreground`). No raw colors except formula-total `text-amber-600`.
+- `gap-*` not `space-y-*`. Lucide icons. Copy through i18n (en, fr, it).
+- One primary button per cluster. Empty/locked/paid-gap states stay in the same layout.
+- Check light and dark, and a narrow screen.
+
+If you add a pattern we will reuse, update `DESIGN.md`.

@@ -1,0 +1,39 @@
+{
+  "name": "api",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=22.13.0"
+  },
+  "scripts": {
+    "dev": "NODE_OPTIONS=--experimental-strip-types node --env-file=../../.env ../../node_modules/.bin/mastra dev",
+    "build": "mastra build",
+    "start": "mastra start",
+    "db:generate": "drizzle-kit generate",
+    "db:migrate": "tsx src/db/migrate.ts",
+    "db:seed": "tsx src/db/seed.ts"
+  },
+  "dependencies": {
+    "@atelier/domain": "*",
+    "@hono/node-server": "^1.14.1",
+    "@libsql/client": "^0.15.4",
+    "@mastra/auth": "^1.0.0",
+    "@mastra/core": "1.63.2",
+    "@mastra/libsql": "^1.0.0",
+    "@mastra/memory": "^1.0.0",
+    "bcryptjs": "^3.0.2",
+    "drizzle-orm": "^0.44.2",
+    "hono": "^4.7.10",
+    "jose": "^6.0.11",
+    "zod": "^3.24.2"
+  },
+  "devDependencies": {
+    "@types/bcryptjs": "^2.4.6",
+    "@types/node": "latest",
+    "drizzle-kit": "^0.31.1",
+    "mastra": "1.27.2",
+    "tsx": "^4.19.4",
+    "typescript": "^6.0.3"
+  }
+}

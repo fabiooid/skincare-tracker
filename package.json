@@ -1,0 +1,26 @@
+{
+  "name": "atelier",
+  "private": true,
+  "version": "0.0.1",
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "dev": "concurrently -n api,web -c cyan,magenta \"npm run dev:api\" \"npm run dev:web\"",
+    "dev:api": "npm run dev --workspace=apps/api",
+    "dev:web": "npm run dev --workspace=apps/web",
+    "build": "npm run build --workspaces --if-present",
+    "test": "npm run test --workspace=packages/domain",
+    "db:generate": "npm run db:generate --workspace=apps/api",
+    "db:migrate": "npm run db:migrate --workspace=apps/api",
+    "db:seed": "npm run db:seed --workspace=apps/api",
+    "db:setup": "npm run db:migrate --workspace=apps/api && npm run db:seed --workspace=apps/api"
+  },
+  "engines": {
+    "node": ">=22.13.0"
+  },
+  "devDependencies": {
+    "concurrently": "^9.1.2"
+  }
+}

@@ -1,0 +1,83 @@
+{
+  "version": "7",
+  "dialect": "sqlite",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "6",
+      "when": 1788271815040,
+      "tag": "0000_lowly_korg",
+      "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "6",
+      "when": 1788275000000,
+      "tag": "0001_product_variants",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "6",
+      "when": 1788275700000,
+      "tag": "0002_olfactory_pyramid",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "6",
+      "when": 1788350000000,
+      "tag": "0003_organizations",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "6",
+      "when": 1788430000000,
+      "tag": "0004_ingredients",
+      "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "6",
+      "when": 1788510000000,
+      "tag": "0005_product_pinned",
+      "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "6",
+      "when": 1788590000000,
+      "tag": "0006_product_claims",
+      "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "6",
+      "when": 1788670000000,
+      "tag": "0007_ingredient_price",
+      "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "6",
+      "when": 1788750000000,
+      "tag": "0008_ingredient_on_hand",
+      "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "6",
+      "when": 1788830000000,
+      "tag": "0009_agent_proposals",
+      "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "6",
+      "when": 1788910000000,
+      "tag": "0010_feedback",
+      "breakpoints": true
+    }
+  ]
+}
