@@ -33,7 +33,7 @@ export const formulatorAgent = new Agent({
   id: 'formulatorAgent',
   name: 'Formulator Agent',
   instructions: INSTRUCTIONS,
-  model: resolveOpenAiModel(),
+  model: resolveOpenAiModel(process.env.OPENAI_MODEL),
   tools: formulatorTools,
   memory: new Memory({
     options: {

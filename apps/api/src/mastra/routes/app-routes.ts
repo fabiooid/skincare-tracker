@@ -536,7 +536,7 @@ export async function agentGateMiddleware(
       402,
     )
   }
-  if (!isOpenAiApiKeyConfigured()) {
+  if (!isOpenAiApiKeyConfigured(process.env.OPENAI_API_KEY)) {
     return c.json(MISSING_OPENAI_KEY_ERROR, 503)
   }
 

@@ -7,12 +7,15 @@ export const MISSING_OPENAI_KEY_ERROR = {
     'Set OPENAI_API_KEY before using the formulator agent. Get a key at https://platform.openai.com/api-keys. Never commit the real key.',
 } as const
 
-export function resolveOpenAiModel(raw = process.env.OPENAI_MODEL): string {
+const EXAMPLE_KEY_PLACEHOLDER = 'sk-your-key'
+
+export function resolveOpenAiModel(raw: string | undefined | null): string {
   const value = raw?.trim()
   if (!value) return DEFAULT_OPENAI_MODEL
   return value.includes('/') ? value : `openai/${value}`
 }
 
-export function isOpenAiApiKeyConfigured(raw = process.env.OPENAI_API_KEY): boolean {
-  return Boolean(raw?.trim())
+export function isOpenAiApiKeyConfigured(raw: string | undefined | null): boolean {
+  const value = raw?.trim() ?? ''
+  return value.length > 0 && value !== EXAMPLE_KEY_PLACEHOLDER
 }
