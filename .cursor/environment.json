@@ -5,7 +5,7 @@
     {
       "name": "dev",
       "command": "npm run dev",
-      "description": "Starts the API on port 4111 and the web app on port 5173"
+      "description": "Starts the API on port 4111 and the web app on port 5173. The paid formulator agent needs OPENAI_API_KEY from Cursor Cloud settings or .env. Optional OPENAI_MODEL defaults to openai/gpt-4o-mini."
     }
   ],
   "ports": [

@@ -53,6 +53,7 @@ import {
 import { getHomeDashboard } from '../../services/home.js'
 import { listPendingProposals, resolveProposal } from '../../services/proposals.js'
 import { createFeedback } from '../../services/feedback.js'
+import { resolveOpenAiApiKey } from '../openai-model.js'
 
 type HonoLike = {
   req: { header: (name: string) => string | undefined; json: () => Promise<unknown>; param: (name: string) => string }
@@ -533,6 +534,18 @@ export async function agentGateMiddleware(
         message: 'Upgrade to use the formulator agent. The notebook and manual editor remain free.',
       },
       402,
+    )
+  }
+
+  if (!resolveOpenAiApiKey()) {
+    return c.json(
+      {
+        error: 'OPENAI_API_KEY is not set',
+        code: 'OPENAI_NOT_CONFIGURED',
+        message:
+          'Set OPENAI_API_KEY to use the formulator. Get a key at https://platform.openai.com/api-keys',
+      },
+      503,
     )
   }
 

@@ -25,7 +25,7 @@ The agent is a side pane you can open from any signed-in page (sparkle in the br
 ## Prerequisites
 
 - Node.js **≥ 22.13**
-- `OPENAI_API_KEY` (only needed for the paid agent feature)
+- `OPENAI_API_KEY` (only needed for the paid agent feature). Get a key from https://platform.openai.com/api-keys
 
 ## Quick start
 
@@ -65,7 +65,8 @@ npm run dev
 
 | Variable | Description |
 |---|---|
-| `OPENAI_API_KEY` | OpenAI key for the formulator agent |
+| `OPENAI_API_KEY` | OpenAI key for the formulator agent. Get one at https://platform.openai.com/api-keys |
+| `OPENAI_MODEL` | Optional Mastra model id. Default `openai/gpt-4o-mini`. A bare name like `gpt-4o-mini` also works. |
 | `MASTRA_JWT_SECRET` | JWT signing secret (app auth + API) |
 | `DATABASE_URL` | SQLite path, default `file:./data/app.db` |
 | `PORT` | Mastra API port, default `4111` |
@@ -80,7 +81,7 @@ npm run dev
 | `npm run db:migrate` | Run Drizzle migrations |
 | `npm run db:seed` | Seed rules + demo products |
 | `npm run db:setup` | Migrate + seed |
-| `npm run test` | Regulatory engine tests |
+| `npm run test` | Domain tests and OpenAI model helper tests |
 
 ## Project layout
 
