@@ -25,7 +25,7 @@ The agent is a side pane you can open from any signed-in page (sparkle in the br
 ## Prerequisites
 
 - Node.js **≥ 22.13**
-- `GEMINI_API_KEY` (only needed for the paid agent feature). Get a key from https://aistudio.google.com/app/apikey. `OPENAI_API_KEY` is an optional fallback.
+- `GEMINI_API_KEY` (only needed for the paid agent feature). Get a key from https://aistudio.google.com/app/apikey. You can add `OPENAI_API_KEY` later as a backup.
 
 ## Quick start
 
@@ -67,7 +67,7 @@ npm run dev
 |---|---|
 | `GEMINI_API_KEY` | Primary key for the formulator agent. Get one at https://aistudio.google.com/app/apikey |
 | `GEMINI_MODEL` | Optional. Default `google/gemini-2.5-flash`. A bare name like `gemini-2.5-flash` also works. |
-| `OPENAI_API_KEY` | Fallback key if Gemini is missing or fails. Get one at https://platform.openai.com/api-keys |
+| `OPENAI_API_KEY` | Optional later. Backup if Gemini fails. Get one at https://platform.openai.com/api-keys |
 | `OPENAI_MODEL` | Optional. Default `openai/gpt-4o-mini`. A bare name like `gpt-4o-mini` also works. |
 | `MASTRA_JWT_SECRET` | JWT signing secret (app auth + API) |
 | `DATABASE_URL` | SQLite path, default `file:./data/app.db` |

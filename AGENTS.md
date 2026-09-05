@@ -20,7 +20,7 @@ Secrets belong in Cursor Cloud settings, not in git:
 
 - `GEMINI_API_KEY` — primary key for the paid formulator agent (https://aistudio.google.com/app/apikey)
 - `GEMINI_MODEL` — optional; defaults to `google/gemini-2.5-flash`
-- `OPENAI_API_KEY` — fallback if Gemini is missing or fails (https://platform.openai.com/api-keys)
+- `OPENAI_API_KEY` — optional later; backup if Gemini fails (https://platform.openai.com/api-keys)
 - `OPENAI_MODEL` — optional; defaults to `openai/gpt-4o-mini`
 - `MASTRA_JWT_SECRET` — optional; a local default exists
 
