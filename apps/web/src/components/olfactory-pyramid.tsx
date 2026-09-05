@@ -1,7 +1,8 @@
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { SparklesIcon } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardAction, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Field, FieldLabel } from '@/components/ui/field'
 import { Input } from '@/components/ui/input'
 import { useLanguage } from '@/i18n/language-provider'
 import type { OlfactoryPyramid } from '@/lib/api'
@@ -86,10 +87,22 @@ export function OlfactoryPyramidGenerator({
   )
   const hasNotes = pyramid.top.length + pyramid.heart.length + pyramid.base.length > 0
 
-  useEffect(() => {
+  // Reset the editor only when the *saved* pyramid really changed —
+  // compared by content, so a background refetch does not wipe unsaved edits.
+  const savedKey = JSON.stringify(initialValue ?? null)
+  const [seenKey, setSeenKey] = useState(savedKey)
+  if (seenKey !== savedKey) {
+    setSeenKey(savedKey)
     setDirection(initialValue?.direction || brief)
     setPyramid(initialValue ?? emptyPyramid(brief))
-  }, [initialValue, brief])
+  }
+
+  // Until a pyramid is saved, the direction follows the brief — but only while it is untouched.
+  const [seenBrief, setSeenBrief] = useState(brief)
+  if (seenBrief !== brief) {
+    setSeenBrief(brief)
+    if (!initialValue && direction === seenBrief) setDirection(brief)
+  }
 
   function generate() {
     setPyramid(suggestNotes(direction))
@@ -104,18 +117,15 @@ export function OlfactoryPyramidGenerator({
   }
 
   return (
-    <Card size="sm">
+    <Card>
       <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <SparklesIcon className="size-3.5 text-accent-brand" />
-          {t('olfactory.title')}
-        </CardTitle>
+        <CardTitle>{t('olfactory.title')}</CardTitle>
         <CardAction>
-          <div className="flex items-center gap-1.5">
+          <div className="flex flex-wrap items-center gap-2">
             <Button
               type="button"
               variant="outline"
-              size="xs"
+              size="sm"
               onClick={generate}
               disabled={!direction.trim()}
             >
@@ -124,7 +134,7 @@ export function OlfactoryPyramidGenerator({
             </Button>
             <Button
               type="button"
-              size="xs"
+              size="sm"
               onClick={() => onSave({ ...pyramid, direction })}
               disabled={saving || !hasNotes}
             >
@@ -133,25 +143,27 @@ export function OlfactoryPyramidGenerator({
           </div>
         </CardAction>
       </CardHeader>
-      <CardContent className="gap-2">
+      <CardContent>
         <Input
           value={direction}
           onChange={(event) => setDirection(event.target.value)}
           placeholder={t('olfactory.placeholder')}
-          className="h-8"
         />
-        <div className="grid grid-cols-1 gap-1.5 sm:grid-cols-3">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
           <PyramidLevel
+            id="pyramid-top"
             label={t('olfactory.top')}
             value={joinNotes(pyramid.top)}
             onChange={(value) => updateLevel('top', value)}
           />
           <PyramidLevel
+            id="pyramid-heart"
             label={t('olfactory.heart')}
             value={joinNotes(pyramid.heart)}
             onChange={(value) => updateLevel('heart', value)}
           />
           <PyramidLevel
+            id="pyramid-base"
             label={t('olfactory.base')}
             value={joinNotes(pyramid.base)}
             onChange={(value) => updateLevel('base', value)}
@@ -163,24 +175,26 @@ export function OlfactoryPyramidGenerator({
 }
 
 function PyramidLevel({
+  id,
   label,
   value,
   onChange,
 }: {
+  id: string
   label: string
   value: string
   onChange: (value: string) => void
 }) {
+  const { t } = useLanguage()
   return (
-    <label className="flex min-w-0 flex-col gap-1 rounded-md border border-border/60 bg-muted/40 px-2 py-1.5">
-      <span className="text-[11px] font-medium leading-none text-muted-foreground">{label}</span>
+    <Field>
+      <FieldLabel htmlFor={id}>{label}</FieldLabel>
       <Input
+        id={id}
         value={value}
         onChange={(event) => onChange(event.target.value)}
-        aria-label={label}
-        placeholder="Note, note"
-        className="h-7 border-0 bg-transparent px-0 shadow-none focus-visible:ring-0"
+        placeholder={t('olfactory.notesPlaceholder')}
       />
-    </label>
+    </Field>
   )
 }

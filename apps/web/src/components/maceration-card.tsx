@@ -1,6 +1,6 @@
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardAction, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Field, FieldGroup, FieldLabel } from '@/components/ui/field'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
@@ -36,18 +36,21 @@ export function MacerationCard({
 
   return (
     <Card>
-      <CardHeader className="pb-2">
-        <div className="flex items-center justify-between gap-2">
-          <CardTitle className="text-base">{t('workspace.maceration.title')}</CardTitle>
+      <CardHeader>
+        <CardTitle>{t('workspace.maceration.title')}</CardTitle>
+        <CardAction>
           <Badge variant="secondary">{t(statusKey)}</Badge>
-        </div>
+        </CardAction>
         <CardDescription>{t('workspace.maceration.description')}</CardDescription>
       </CardHeader>
       <CardContent>
         <FieldGroup>
           <Field>
             <FieldLabel htmlFor={`mac-start-${variant.id}`}>{t('workspace.maceration.startDate')}</FieldLabel>
+            {/* Keyed on the saved value so the field refreshes after "Start today" or a variant switch,
+                without fighting the person while they type. */}
             <Input
+              key={`${variant.id}:${variant.macerationStartedAt ?? ''}`}
               id={`mac-start-${variant.id}`}
               type="date"
               defaultValue={toDateInput(variant.macerationStartedAt)}
@@ -58,12 +61,12 @@ export function MacerationCard({
                   macerationNotes: variant.macerationNotes,
                 })
               }
-              disabled={saving}
             />
           </Field>
           <Field>
             <FieldLabel htmlFor={`mac-target-${variant.id}`}>{t('workspace.maceration.targetDate')}</FieldLabel>
             <Input
+              key={`${variant.id}:${variant.macerationTargetAt ?? ''}`}
               id={`mac-target-${variant.id}`}
               type="date"
               defaultValue={toDateInput(variant.macerationTargetAt)}
@@ -74,24 +77,25 @@ export function MacerationCard({
                   macerationNotes: variant.macerationNotes,
                 })
               }
-              disabled={saving}
             />
           </Field>
           <Field>
             <FieldLabel htmlFor={`mac-notes-${variant.id}`}>{t('workspace.maceration.notes')}</FieldLabel>
             <Textarea
+              key={`${variant.id}:${variant.macerationNotes ?? ''}`}
               id={`mac-notes-${variant.id}`}
               rows={2}
               defaultValue={variant.macerationNotes ?? ''}
               placeholder={t('workspace.maceration.notesPlaceholder')}
-              onBlur={(e) =>
+              onBlur={(e) => {
+                const next = e.target.value.trim() || null
+                if (next === (variant.macerationNotes ?? null)) return
                 onSave({
                   macerationStartedAt: variant.macerationStartedAt,
                   macerationTargetAt: variant.macerationTargetAt,
-                  macerationNotes: e.target.value || null,
+                  macerationNotes: next,
                 })
-              }
-              disabled={saving}
+              }}
             />
           </Field>
           <Button

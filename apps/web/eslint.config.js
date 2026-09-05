@@ -18,5 +18,10 @@ export default defineConfig([
     languageOptions: {
       globals: globals.browser,
     },
+    rules: {
+      // shadcn primitives export `buttonVariants` and friends next to their component,
+      // and providers export their hook. That only affects hot reload, so warn, don't fail.
+      'react-refresh/only-export-components': ['warn', { allowConstantExport: true }],
+    },
   },
 ])

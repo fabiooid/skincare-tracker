@@ -183,26 +183,30 @@ export function ProductWorkspacePage() {
   const currentRowsCommitted = hasCommittedRows(rows)
 
   return (
-    <AppShell title={data.product.name} wide>
-      <div className="flex flex-col gap-6">
+    <AppShell
+      title={data.product.name}
+      wide
+      breadcrumbAction={
+        <PinButton
+          className="shrink-0"
+          pinned={isProductPinned(data.product)}
+          onToggle={() =>
+            pinMutation.mutate({
+              productId: data.product.id,
+              pinned: !isProductPinned(data.product),
+            })
+          }
+        />
+      }
+    >
+      <div className="flex flex-col gap-2">
         <PageHeader
-          className="mb-0 sm:items-center"
+          className="mb-0"
           title={
             <ProductNameInput
               name={data.product.name}
               saving={renameMutation.isPending}
               onSave={(name) => renameMutation.mutate(name)}
-            />
-          }
-          actions={
-            <PinButton
-              pinned={isProductPinned(data.product)}
-              onToggle={() =>
-                pinMutation.mutate({
-                  productId: data.product.id,
-                  pinned: !isProductPinned(data.product),
-                })
-              }
             />
           }
         />

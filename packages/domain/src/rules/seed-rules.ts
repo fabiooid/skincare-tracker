@@ -48,7 +48,7 @@ export const SEED_RULES: IngredientRule[] = [
     inciNames: ['Fragrance', 'Parfum'],
     effect: 'inci_wording',
     preferredInci: 'Parfum',
-    citationUrl: 'https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX:3209R1223',
+    citationUrl: 'https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX:32009R1223',
     message: 'EU INCI lists should use "Parfum" rather than "Fragrance".',
   },
   {

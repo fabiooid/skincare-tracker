@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Link, Navigate } from 'react-router-dom'
+import { Link, Navigate, useLocation } from 'react-router-dom'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Field, FieldGroup, FieldLabel } from '@/components/ui/field'
@@ -16,13 +16,16 @@ export function AuthForm({
 }) {
   const { user, login, register } = useAuth()
   const { t } = useLanguage()
+  const location = useLocation()
   const [email, setEmail] = useState(mode === 'login' ? 'demo@local.test' : '')
   const [password, setPassword] = useState(mode === 'login' ? 'demo' : '')
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
   const isLogin = mode === 'login'
 
-  if (user) return <Navigate to="/" replace />
+  // Sent here from a signed-in page? Go back there after signing in.
+  const from = (location.state as { from?: string } | null)?.from
+  if (user) return <Navigate to={from && from.startsWith('/') ? from : '/'} replace />
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault()
@@ -42,8 +45,8 @@ export function AuthForm({
     <div className="app-grid relative flex min-h-dvh flex-col">
       <header className="flex items-center justify-between px-4 py-4 sm:px-8">
         <div className="flex items-center gap-2.5">
-          <span className="flex size-7 items-center justify-center rounded-lg border border-border/70 bg-card shadow-soft">
-            <TriangleIcon className="size-3.5 fill-current" />
+          <span className="flex size-7 items-center justify-center">
+            <TriangleIcon className="size-4 fill-current" />
           </span>
           <span className="text-sm font-semibold tracking-normal">{t('appName')}</span>
         </div>
@@ -52,7 +55,7 @@ export function AuthForm({
 
       <div className="flex flex-1 items-center justify-center p-4 pb-16">
         <Card className="w-full max-w-[400px] border-border/60">
-          <CardHeader className="space-y-1 pb-4">
+          <CardHeader className="pb-4">
             <CardTitle className="text-xl font-semibold tracking-tight">
               {t(isLogin ? 'auth.signInTitle' : 'auth.registerTitle')}
             </CardTitle>

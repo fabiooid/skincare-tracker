@@ -453,31 +453,57 @@ export const api = {
     if (!reader) return
 
     const decoder = new TextDecoder()
-    const chunks: string[] = []
+    let buffer = ''
+    let gotText = false
+
+    const handleEvent = (json: { type?: string; payload?: { text?: string; delta?: string; error?: { message?: string } | string }; text?: string; delta?: string; error?: { message?: string } | string }) => {
+      if (json.type === 'error') {
+        const err = json.payload?.error ?? json.error
+        const message =
+          typeof err === 'string'
+            ? err
+            : err && typeof err.message === 'string'
+              ? err.message
+              : 'Agent failed'
+        throw new Error(message.trim() || 'Agent failed')
+      }
+      const text =
+        json.type === 'text-delta'
+          ? json.payload?.text ?? json.payload?.delta ?? json.delta ?? json.text
+          : json.type === 'text'
+            ? json.text
+            : undefined
+      if (typeof text === 'string' && text) {
+        gotText = true
+        onChunk(text)
+      }
+    }
+
+    const consume = (chunk: string) => {
+      buffer += chunk
+      const lines = buffer.split('\n')
+      buffer = lines.pop() ?? ''
+      for (const line of lines) {
+        const trimmed = line.trim()
+        if (!trimmed) continue
+        const payload = trimmed.startsWith('data:') ? trimmed.slice(5).trim() : trimmed
+        if (!payload || payload === '[DONE]') continue
+        try {
+          handleEvent(JSON.parse(payload))
+        } catch (err) {
+          if (err instanceof SyntaxError) continue
+          throw err
+        }
+      }
+    }
 
     while (true) {
       const { done, value } = await reader.read()
       if (done) break
-      chunks.push(decoder.decode(value, { stream: true }))
-      const buffer = chunks.join('')
-      const parts = buffer.split('\x1E')
-      chunks.length = 0
-      chunks.push(parts.pop() ?? '')
-      for (const part of parts) {
-        if (!part.trim()) continue
-        try {
-          const json = JSON.parse(part)
-          if (json.type === 'text-delta' && json.payload?.text) {
-            onChunk(json.payload.text)
-          }
-          if (json.type === 'text' && typeof json.text === 'string') {
-            onChunk(json.text)
-          }
-        } catch {
-          // ignore incomplete JSON frames
-        }
-      }
+      consume(decoder.decode(value, { stream: true }))
     }
+    if (buffer.trim()) consume('\n')
+    if (!gotText) throw new Error('Agent failed')
   },
 }
 

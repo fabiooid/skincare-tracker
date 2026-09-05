@@ -4,9 +4,43 @@ import {
   computeProductStage,
   collectPurchaseSuggestions,
   findInventoryMatch,
+  generateInciList,
+  isWaterInci,
   normalizeProductClaims,
   type FormulaRow,
 } from './types.ts'
+
+describe('isWaterInci', () => {
+  it('matches the usual spellings of water', () => {
+    expect(isWaterInci('Aqua')).toBe(true)
+    expect(isWaterInci(' WATER ')).toBe(true)
+    expect(isWaterInci('Aqua (Water)')).toBe(true)
+  })
+
+  it('does not match ingredients that only contain the word', () => {
+    expect(isWaterInci('Aquaxyl')).toBe(false)
+    expect(isWaterInci('Rosa Damascena Flower Water')).toBe(false)
+  })
+})
+
+describe('generateInciList', () => {
+  it('lists by descending percent, merges duplicates and puts colourants last', () => {
+    const list = generateInciList([
+      { inci: 'CI 77891', percent: 2 },
+      { inci: 'Glycerin', percent: 3 },
+      { inci: 'Aqua', percent: 80 },
+      { inci: 'Parfum', percent: 0.5 },
+      { inci: 'glycerin', percent: 2 },
+      { inci: 'Linalool', percent: 0.8 },
+    ])
+
+    expect(list).toBe('Aqua, Glycerin, Linalool, Parfum, CI 77891')
+  })
+
+  it('skips empty rows', () => {
+    expect(generateInciList([{ inci: '', percent: 10 }, { inci: 'Aqua', percent: 90 }])).toBe('Aqua')
+  })
+})
 
 const row = (inci: string): FormulaRow => ({
   id: '1',

@@ -277,7 +277,7 @@ export const getInventoryTool = createTool({
 export const getHomeTool = createTool({
   id: 'get_home',
   description:
-    'Get the atelier morning brief: shelf value, items to purchase, formulas that need attention, and formula cost coverage.',
+    'Get the atelier morning brief: shelf value, items to purchase, formulas that need attention, and formula cost coverage. Only use when the user asks how the atelier is doing, what needs attention, or a similar overview. Do not use for “what can we do” or how to work together.',
   inputSchema: z.object({}),
   execute: async (_input, context) => {
     const { userId } = getToolContext(context)

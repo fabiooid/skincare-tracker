@@ -1,6 +1,6 @@
 import {
   findInventoryMatch,
-  normalizeInci,
+  isWaterInci,
   type IngredientOriginType,
   type ProductClaim,
   type TriStateFlag,
@@ -30,11 +30,6 @@ export type ClaimInventoryItem = {
   organicCertified: TriStateFlag
 }
 
-function isWaterIngredient(inci: string): boolean {
-  const value = normalizeInci(inci)
-  return value === 'aqua' || value === 'water' || value.includes('aqua')
-}
-
 function pushHit(hits: ClaimHit[], hit: ClaimHit) {
   const exists = hits.some(
     (item) => item.inci === hit.inci && item.claim === hit.claim && item.reason === hit.reason,
@@ -54,7 +49,7 @@ export function evaluateClaimHits(input: {
 
   for (const row of input.rows) {
     const inci = row.inci.trim()
-    if (!inci || isWaterIngredient(inci)) continue
+    if (!inci || isWaterInci(inci)) continue
 
     const match = findInventoryMatch(inci, input.inventory)
     const animalDerived = match?.animalDerived ?? 'unknown'

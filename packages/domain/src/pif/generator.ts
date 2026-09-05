@@ -27,7 +27,9 @@ export function generatePifDraft(input: {
   const water = hasWaterPhase(rows)
   const generatedAt = new Date().toISOString()
 
-  const composition = rows
+  // Copy before sorting — `rows` belongs to the caller and must keep its table order.
+  const composition = [...rows]
+    .filter((row) => row.inci.trim())
     .sort((a, b) => b.percent - a.percent)
     .map((row) => `- **${row.inci}** — ${row.percent}% w/w (${row.function}, ${row.phase})`)
     .join('\n')
@@ -58,7 +60,7 @@ export function generatePifDraft(input: {
       id: 'composition',
       title: 'Qualitative and quantitative composition',
       content: composition || '_No formula rows committed._',
-      isGap: rows.length === 0,
+      isGap: !composition,
     },
     {
       id: 'manufacturing',
@@ -76,7 +78,8 @@ export function generatePifDraft(input: {
       id: 'claims',
       title: 'Claims',
       content: formatClaimsSection(product.claims ?? [], claimHits),
-      isGap: true,
+      // A claim still needs supplier evidence in the file, so it stays a gap; no claims, no gap.
+      isGap: (product.claims ?? []).length > 0,
     },
     {
       id: 'stability',

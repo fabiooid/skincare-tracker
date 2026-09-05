@@ -7,7 +7,7 @@
     "node": ">=22.13.0"
   },
   "scripts": {
-    "dev": "NODE_OPTIONS=--experimental-strip-types node --env-file=../../.env ../../node_modules/.bin/mastra dev",
+    "dev": "NODE_OPTIONS='--experimental-strip-types --no-network-family-autoselection' node --env-file=../../.env ../../node_modules/.bin/mastra dev",
     "build": "mastra build",
     "start": "mastra start",
     "db:generate": "drizzle-kit generate",

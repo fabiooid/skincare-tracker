@@ -2,24 +2,13 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { Link, Navigate, useNavigate } from 'react-router-dom'
 import { LayoutGridIcon, ListIcon, PlusIcon } from 'lucide-react'
 import { AppShell, PageHeader } from '@/components/layout'
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from '@/components/ui/dialog'
 import { EmptyState } from '@/components/empty-state'
-import { Field, FieldDescription, FieldGroup, FieldLabel } from '@/components/ui/field'
-import { Input } from '@/components/ui/input'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { Textarea } from '@/components/ui/textarea'
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group'
 import { api } from '@/lib/api'
-import { FREE_MARKETS } from '@atelier/domain'
 import { useAuth } from '@/lib/auth'
 import { useLanguage } from '@/i18n/language-provider'
 import type { Language } from '@/i18n/languages'
@@ -28,8 +17,6 @@ import type { ProductStage, ProductSummary } from '@/lib/api'
 import { useState } from 'react'
 import { cn } from '@/lib/utils'
 import { PinButton, isProductPinned, usePinProduct } from '@/components/pin-button'
-import { ClaimPicker } from '@/components/claim-picker'
-import type { ProductClaim } from '@atelier/domain'
 
 type ProductView = 'cards' | 'list'
 
@@ -77,14 +64,19 @@ function ProductMeta({ product }: { product: ProductSummary }) {
 
   return (
     <>
-      <Badge variant="outline">{t(`productType.${product.type}` as MessageKey)}</Badge>
+      {/* DESIGN.md: type / stage / markets are secondary pills; claims are outline (extra info). */}
+      <Badge variant="secondary">{t(`productType.${product.type}` as MessageKey)}</Badge>
       <Badge variant="secondary">{t(stageLabelKey(product.stage))}</Badge>
+      {product.markets.map((market) => (
+        <Badge key={market} variant="secondary">
+          {market}
+        </Badge>
+      ))}
       {(product.claims ?? []).map((claim) => (
         <Badge key={claim} variant="outline">
           {t(`claims.${claim}` as MessageKey)}
         </Badge>
       ))}
-      <span className="text-muted-foreground">{product.markets.join(' · ')}</span>
     </>
   )
 }
@@ -127,11 +119,6 @@ export function ProductsPage() {
   const { t } = useLanguage()
   const navigate = useNavigate()
   const queryClient = useQueryClient()
-  const [open, setOpen] = useState(false)
-  const [name, setName] = useState('')
-  const [type, setType] = useState('skincare')
-  const [brief, setBrief] = useState('')
-  const [claims, setClaims] = useState<ProductClaim[]>([])
   const [view, setView] = useState<ProductView>(readStoredView)
   const pinMutation = usePinProduct()
 
@@ -140,7 +127,7 @@ export function ProductsPage() {
     localStorage.setItem(VIEW_STORAGE_KEY, next)
   }
 
-  const { data, isLoading } = useQuery({
+  const { data, isLoading, isError, refetch } = useQuery({
     queryKey: ['products'],
     queryFn: () => api.listProducts(),
     enabled: !!user,
@@ -149,19 +136,11 @@ export function ProductsPage() {
   const createMutation = useMutation({
     mutationFn: () =>
       api.createProduct({
-        name: name || t('products.untitled'),
-        type,
-        markets: [...FREE_MARKETS],
-        brief,
-        claims,
+        name: t('products.untitled'),
       }),
     onSuccess: (result) => {
       queryClient.invalidateQueries({ queryKey: ['products'] })
-      setOpen(false)
-      setName('')
-      setBrief('')
-      setClaims([])
-      navigate(`/products/${result.product.id}`)
+      navigate(`/products/${result.product.id}?focus=brief`)
     },
   })
 
@@ -175,65 +154,36 @@ export function ProductsPage() {
         actions={
           <>
             <ProductViewSwitcher view={view} onViewChange={handleViewChange} />
-            <Dialog open={open} onOpenChange={setOpen}>
-              <DialogTrigger render={<Button><PlusIcon data-icon="inline-start" />{t('products.newFromBrief')}</Button>} />
-              <DialogContent className="border-border/80 bg-background">
-                <DialogHeader>
-                  <DialogTitle>{t('products.dialogTitle')}</DialogTitle>
-                </DialogHeader>
-                <FieldGroup>
-                  <Field>
-                    <FieldLabel>{t('products.name')}</FieldLabel>
-                    <Input
-                      value={name}
-                      maxLength={120}
-                      onChange={(e) => setName(e.target.value)}
-                      placeholder={t('products.namePlaceholder')}
-                    />
-                  </Field>
-                  <Field>
-                    <FieldLabel>{t('products.type')}</FieldLabel>
-                    <Select value={type} onValueChange={(v) => v && setType(v)}>
-                      <SelectTrigger>
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="skincare">{t('productType.skincare')}</SelectItem>
-                        <SelectItem value="perfume">{t('productType.perfume')}</SelectItem>
-                        <SelectItem value="hybrid">{t('productType.hybrid')}</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </Field>
-                  <Field>
-                    <FieldLabel>{t('products.claims')}</FieldLabel>
-                    <ClaimPicker value={claims} onChange={setClaims} />
-                    <FieldDescription>{t('claims.hint')}</FieldDescription>
-                  </Field>
-                  <Field>
-                    <FieldLabel>{t('products.brief')}</FieldLabel>
-                    <Textarea
-                      value={brief}
-                      onChange={(e) => setBrief(e.target.value)}
-                      placeholder={t('products.briefPlaceholder')}
-                      rows={4}
-                    />
-                  </Field>
-                  <Button
-                    onClick={() => createMutation.mutate()}
-                    disabled={!brief.trim() || createMutation.isPending}
-                  >
-                    {t('products.create')}
-                  </Button>
-                </FieldGroup>
-              </DialogContent>
-            </Dialog>
+            <Button
+              onClick={() => createMutation.mutate()}
+              disabled={createMutation.isPending}
+            >
+              <PlusIcon data-icon="inline-start" />
+              {createMutation.isPending ? t('products.creating') : t('products.newProduct')}
+            </Button>
           </>
         }
       />
 
       <div className="flex flex-col gap-6">
+        {createMutation.isError ? (
+          <Alert variant="destructive">
+            <AlertTitle>{t('products.createFailed')}</AlertTitle>
+            <AlertDescription>{createMutation.error.message}</AlertDescription>
+          </Alert>
+        ) : null}
         {isLoading ? (
           <p className="text-sm text-muted-foreground">{t('products.loading')}</p>
+        ) : isError && !data ? (
+          <EmptyState
+            title={t('products.loadFailedTitle')}
+            description={t('workspace.loadFailedDescription')}
+            action={
+              <Button variant="outline" onClick={() => refetch()}>
+                {t('common.retry')}
+              </Button>
+            }
+          />
         ) : !data?.products.length ? (
           <EmptyState
             title={t('products.emptyTitle')}
@@ -258,7 +208,9 @@ export function ProductsPage() {
                     >
                       <div className="min-w-0 flex-1">
                         <p className="font-medium tracking-tight group-hover:text-foreground">{product.name}</p>
-                        <p className="mt-0.5 line-clamp-1 text-sm text-muted-foreground">{product.brief}</p>
+                        <p className="mt-0.5 line-clamp-1 text-sm text-muted-foreground">
+                          {product.brief.trim() || t('products.noBrief')}
+                        </p>
                       </div>
                       <ProductDates product={product} className="shrink-0 sm:min-w-40" />
                       <div className="flex flex-wrap items-center gap-2 text-xs sm:justify-end">
@@ -291,7 +243,7 @@ export function ProductsPage() {
                             {product.name}
                           </CardTitle>
                           <CardDescription className="line-clamp-2 text-sm leading-relaxed">
-                            {product.brief}
+                            {product.brief.trim() || t('products.noBrief')}
                           </CardDescription>
                         </CardHeader>
                         <CardContent className="flex flex-col gap-3">

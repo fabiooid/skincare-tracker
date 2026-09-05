@@ -153,7 +153,7 @@ export function IngredientsPage() {
     },
   })
 
-  const ingredients = data?.ingredients ?? []
+  const ingredients = useMemo(() => data?.ingredients ?? [], [data])
   const filtered = useMemo(() => {
     const query = search.trim().toLowerCase()
     return ingredients.filter((item) => {

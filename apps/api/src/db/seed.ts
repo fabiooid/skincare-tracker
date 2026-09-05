@@ -1,4 +1,5 @@
 import { SEED_RULES, RULES_VERSION } from '@atelier/domain'
+import { eq } from 'drizzle-orm'
 import { db } from './client.js'
 import {
   chatThreads,
@@ -18,10 +19,10 @@ function now() {
   return new Date().toISOString()
 }
 
+// Re-running the seed refreshes the rules table in place, so rule text and links stay current.
 async function seedRules() {
   for (const rule of SEED_RULES) {
-    await db.insert(ingredientRules).values({
-      id: rule.id,
+    const update = {
       version: rule.version,
       market: rule.market,
       instrument: rule.instrument,
@@ -37,12 +38,18 @@ async function seedRules() {
       leaveOnOnly: rule.leaveOnOnly ?? null,
       ifraCategory: rule.ifraCategory ?? null,
       preferredInci: rule.preferredInci ?? null,
-    })
+    }
+    await db
+      .insert(ingredientRules)
+      .values({ id: rule.id, ...update })
+      .onConflictDoUpdate({ target: ingredientRules.id, set: update })
   }
 }
 
 async function seedDemoUser() {
   const userId = 'demo-user-id'
+  const [existing] = await db.select({ id: users.id }).from(users).where(eq(users.id, userId)).limit(1)
+  if (existing) return { userId, existed: true }
   await db.insert(users).values({
     id: userId,
     email: 'demo@local.test',
@@ -50,7 +57,7 @@ async function seedDemoUser() {
     plan: 'free',
     createdAt: now(),
   })
-  return userId
+  return { userId, existed: false }
 }
 
 async function seedProductWithVariants(
@@ -155,7 +162,11 @@ async function seedProductWithVariants(
 async function main() {
   console.log(`Seeding rules ${RULES_VERSION}...`)
   await seedRules()
-  const userId = await seedDemoUser()
+  const { userId, existed } = await seedDemoUser()
+  if (existed) {
+    console.log('Demo user already exists — rules refreshed, demo products left untouched.')
+    return
+  }
   const personal = await ensurePersonalOrganization(userId)
   await seedDemoIngredients(personal.id)
 

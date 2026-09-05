@@ -127,17 +127,26 @@ export async function resolveProposal(
   if (!row || row.status !== 'pending') return null
 
   const now = new Date().toISOString()
-  await db
-    .update(agentProposals)
-    .set({ status: action, resolvedAt: now })
-    .where(eq(agentProposals.id, proposalId))
-
   const proposal = fromDb({ ...row, status: action, resolvedAt: now })
-  if (action === 'rejected') return { proposal }
 
+  async function markResolved() {
+    await db
+      .update(agentProposals)
+      .set({ status: action, resolvedAt: now })
+      .where(eq(agentProposals.id, proposalId))
+  }
+
+  if (action === 'rejected') {
+    await markResolved()
+    return { proposal }
+  }
+
+  // Apply the change first. If it throws (duplicate INCI, bad payload…) the proposal stays
+  // pending so the person can retry or reject it, instead of being stuck as "accepted".
   if (proposal.kind === 'inventory_create') {
     const payload = InventoryCreatePayloadSchema.parse(proposal.payload)
     const ingredient = await createIngredient(userId, payload.ingredient)
+    await markResolved()
     return { proposal, ingredient }
   }
 
@@ -145,6 +154,7 @@ export async function resolveProposal(
     const payload = InventoryUpdatePayloadSchema.parse(proposal.payload)
     const ingredient = await updateIngredient(userId, payload.ingredientId, payload.ingredient)
     if (!ingredient) return null
+    await markResolved()
     return { proposal, ingredient }
   }
 
@@ -158,6 +168,7 @@ export async function resolveProposal(
     claims: payload.claims,
   })
   await refreshDerived(product.id, userId)
+  await markResolved()
   return { proposal, product }
 }
 

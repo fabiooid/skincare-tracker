@@ -8,7 +8,7 @@ import type {
   RegulatoryHit,
   RegulatoryStatus,
 } from '../types.ts'
-import { COSING_URL, normalizeInci } from '../types.ts'
+import { COSING_URL, aggregateRowsByInci, isWaterInci, normalizeInci } from '../types.ts'
 
 export interface CheckInput {
   rows: Pick<FormulaRow, 'inci' | 'percent' | 'phase'>[]
@@ -26,20 +26,21 @@ function findMatchingRules(
   const normalized = normalizeInci(inci)
   return rules.filter((rule) => {
     if (rule.market !== market) return false
+    // `leaveOnOnly` needs no check yet: skincare, perfume and hybrid are all leave-on products.
+    // Revisit when a rinse-off product type is added.
     if (rule.productTypes && !rule.productTypes.includes(productType)) return false
     return rule.inciNames.some((name) => normalizeInci(name) === normalized)
   })
 }
 
-function isWater(inci: string): boolean {
-  const value = normalizeInci(inci)
-  return value.includes('aqua') || value === 'water'
-}
-
+/**
+ * Worst finding wins: a ban, then any actionable limit / labelling hit, then "we don't know",
+ * then sellable. An unseeded ingredient must never hide a real restriction on another row.
+ */
 function statusFromRuleHits(hits: RegulatoryHit[], hasUnknown: boolean): RegulatoryStatus {
   if (hits.some((hit) => hit.effect === 'cannot_sell')) return 'banned'
-  if (hasUnknown) return 'unknown'
   if (hits.length > 0) return 'restricted'
+  if (hasUnknown) return 'unknown'
   return 'sellable'
 }
 
@@ -118,7 +119,9 @@ export function evaluateIngredient(
 }
 
 export function runRegulatoryChecks(input: CheckInput): RegulatoryCheckResult[] {
-  const { rows, markets, productType, rules } = input
+  const { markets, productType, rules } = input
+  // Limits apply to the total of an ingredient, so two rows of the same INCI are checked as one.
+  const rows = aggregateRowsByInci(input.rows)
 
   return markets.map((market) => {
     const ruleHits: RegulatoryHit[] = []
@@ -134,7 +137,7 @@ export function runRegulatoryChecks(input: CheckInput): RegulatoryCheckResult[] 
             rule.market === market &&
             rule.inciNames.some((name) => normalizeInci(name) === normalizeInci(row.inci)),
         )
-        return !hasRule && !isWater(row.inci) && row.percent > 0
+        return !hasRule && !isWaterInci(row.inci) && row.percent > 0
       })
       .map((row) => ({
         market,

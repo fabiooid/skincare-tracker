@@ -1,3 +1,4 @@
+/* eslint-disable react-refresh/only-export-components -- provider + hook live together, like the other providers */
 import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from 'react'
 import { api, getToken, setToken, type AuthUser } from './api'
 
@@ -14,21 +15,43 @@ const AuthContext = createContext<AuthContextValue | null>(null)
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<AuthUser | null>(null)
-  const [loading, setLoading] = useState(true)
+  // Only wait on the network when there is a stored token to check.
+  const [loading, setLoading] = useState(() => Boolean(getToken()))
 
   const refreshUser = async () => {
     if (!getToken()) {
       setUser(null)
       return
     }
-    const { user: next } = await api.me()
-    setUser(next)
+    try {
+      const { user: next } = await api.me()
+      setUser(next)
+    } catch (error) {
+      // An expired or invalid token should not linger in storage.
+      setToken(null)
+      setUser(null)
+      throw error
+    }
   }
 
   useEffect(() => {
-    refreshUser()
-      .catch(() => setUser(null))
-      .finally(() => setLoading(false))
+    if (!getToken()) return
+    let cancelled = false
+    api
+      .me()
+      .then(({ user: next }) => {
+        if (!cancelled) setUser(next)
+      })
+      .catch(() => {
+        setToken(null)
+        if (!cancelled) setUser(null)
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false)
+      })
+    return () => {
+      cancelled = true
+    }
   }, [])
 
   const value = useMemo<AuthContextValue>(

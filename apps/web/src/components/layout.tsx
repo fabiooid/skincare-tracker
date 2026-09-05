@@ -11,7 +11,13 @@ import type { MessageKey } from '@/i18n/catalogs'
 import { isSettingsPath } from '@/lib/settings'
 import { cn } from '@/lib/utils'
 
-function PageBreadcrumb({ title }: { title: string }) {
+function PageBreadcrumb({
+  title,
+  action,
+}: {
+  title: string
+  action?: React.ReactNode
+}) {
   const { t } = useLanguage()
   const { setMobileOpen } = useSidebar()
   const location = useLocation()
@@ -52,6 +58,7 @@ function PageBreadcrumb({ title }: { title: string }) {
         <span aria-current="page" className="truncate text-sm font-medium text-foreground/90">
           {title}
         </span>
+        {action}
       </nav>
       {inSettings ? null : <AgentLauncher />}
     </div>
@@ -62,10 +69,12 @@ function AppShellFrame({
   title,
   children,
   wide,
+  breadcrumbAction,
 }: {
   title: string
   children: React.ReactNode
   wide?: boolean
+  breadcrumbAction?: React.ReactNode
 }) {
   const { mode } = useAgent()
   const location = useLocation()
@@ -89,7 +98,7 @@ function AppShellFrame({
         >
           <main className="flex w-full min-w-0 flex-1 justify-center px-4 pt-6 pb-16 sm:px-6 sm:pt-8 sm:pb-20 lg:px-10">
             <div className={cn('min-h-full w-full min-w-0', contentWidth)}>
-              <PageBreadcrumb title={title} />
+              <PageBreadcrumb title={title} action={breadcrumbAction} />
               {children}
             </div>
           </main>
@@ -104,14 +113,16 @@ export function AppShell({
   title,
   children,
   wide,
+  breadcrumbAction,
 }: {
   title: string
   children: React.ReactNode
   wide?: boolean
+  breadcrumbAction?: React.ReactNode
 }) {
   return (
     <SidebarProvider>
-      <AppShellFrame title={title} wide={wide}>
+      <AppShellFrame title={title} wide={wide} breadcrumbAction={breadcrumbAction}>
         {children}
       </AppShellFrame>
     </SidebarProvider>
@@ -130,8 +141,13 @@ export function PageHeader({
   className?: string
 }) {
   return (
-    <div className={cn('mb-8 flex flex-col gap-4 sm:mb-10 sm:flex-row sm:items-end sm:justify-between', className)}>
-      <div className="min-w-0 flex-1 space-y-2">
+    <div
+      className={cn(
+        'flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between',
+        className ?? 'mb-8 sm:mb-10',
+      )}
+    >
+      <div className="flex min-w-0 flex-1 flex-col gap-2">
         <h1 className="text-2xl font-semibold tracking-normal sm:text-[1.75rem]">{title}</h1>
         {description ? (
           <p className="max-w-2xl text-sm leading-relaxed text-muted-foreground">{description}</p>

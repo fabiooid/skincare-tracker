@@ -25,13 +25,13 @@ function isRecord(value: unknown): value is Record<string, unknown> {
 function inventoryPayload(proposal: AgentProposal): InventoryProposalPayload | null {
   if (proposal.kind !== 'inventory_create' && proposal.kind !== 'inventory_update') return null
   if (!isRecord(proposal.payload) || !isRecord(proposal.payload.ingredient)) return null
-  return proposal.payload as InventoryProposalPayload
+  return proposal.payload as unknown as InventoryProposalPayload
 }
 
 function productPayload(proposal: AgentProposal): ProductProposalPayload | null {
   if (proposal.kind !== 'product_create') return null
   if (!isRecord(proposal.payload) || typeof proposal.payload.name !== 'string') return null
-  return proposal.payload as ProductProposalPayload
+  return proposal.payload as unknown as ProductProposalPayload
 }
 
 function stockLine(ingredient: IngredientInput, t: (key: MessageKey) => string) {

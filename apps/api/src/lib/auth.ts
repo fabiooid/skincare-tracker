@@ -5,9 +5,16 @@ import { db } from '../db/client.js'
 import { users } from '../db/schema.js'
 import { ensurePersonalOrganization } from '../services/organizations.js'
 
-const secret = new TextEncoder().encode(
-  process.env.MASTRA_JWT_SECRET ?? 'supersecretdevkeythatishs256safe!',
-)
+const DEV_JWT_SECRET = 'supersecretdevkeythatishs256safe!'
+const jwtSecret = process.env.MASTRA_JWT_SECRET ?? DEV_JWT_SECRET
+
+if (jwtSecret === DEV_JWT_SECRET) {
+  const message = 'MASTRA_JWT_SECRET is not set (or is the example value). Anyone can forge sign-in tokens.'
+  if (process.env.NODE_ENV === 'production') throw new Error(message)
+  console.warn(`[atelier] ${message} Fine for local development only.`)
+}
+
+const secret = new TextEncoder().encode(jwtSecret)
 
 export interface AuthUser {
   id: string

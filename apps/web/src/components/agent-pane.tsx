@@ -1,5 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import {
+  ArrowUpIcon,
   Maximize2Icon,
   Minimize2Icon,
   SparklesIcon,
@@ -28,7 +29,12 @@ import {
   MessageScrollerViewport,
 } from '@/components/ui/message-scroller'
 import { Spinner } from '@/components/ui/spinner'
-import { Textarea } from '@/components/ui/textarea'
+import {
+  InputGroup,
+  InputGroupAddon,
+  InputGroupButton,
+  InputGroupTextarea,
+} from '@/components/ui/input-group'
 import { useLanguage } from '@/i18n/language-provider'
 import { api } from '@/lib/api'
 import { useAuth } from '@/lib/auth'
@@ -462,13 +468,7 @@ export function AgentPane() {
                               {message.role === 'user' ? t('agent.you') : t('agent.agent')}
                             </MessageHeader>
                             <Bubble variant={message.role === 'user' ? 'default' : 'muted'}>
-                              <BubbleContent
-                                className={
-                                  message.role === 'assistant' ? 'font-mono text-[13px]' : undefined
-                                }
-                              >
-                                {message.content}
-                              </BubbleContent>
+                              <BubbleContent>{message.content}</BubbleContent>
                             </Bubble>
                           </MessageContent>
                         </Message>
@@ -518,21 +518,34 @@ export function AgentPane() {
 
           <div className="flex shrink-0 flex-col gap-2 border-t border-border/80 p-3">
             {error ? <p className="text-sm text-destructive">{error}</p> : null}
-            <Textarea
-              value={input}
-              onChange={(event) => setInput(event.target.value)}
-              onKeyDown={(event) => {
-                if (event.key === 'Enter' && !event.shiftKey) {
-                  event.preventDefault()
-                  void send()
-                }
-              }}
-              placeholder={t('agent.placeholder')}
-              rows={3}
-            />
-            <Button onClick={() => void send()} disabled={streaming || !input.trim()}>
-              {streaming ? t('agent.thinking') : t('agent.send')}
-            </Button>
+            <InputGroup>
+              <InputGroupTextarea
+                value={input}
+                onChange={(event) => setInput(event.target.value)}
+                onKeyDown={(event) => {
+                  if (event.key === 'Enter' && !event.shiftKey) {
+                    event.preventDefault()
+                    void send()
+                  }
+                }}
+                placeholder={t('agent.placeholder')}
+                rows={2}
+                disabled={streaming}
+                aria-label={t('agent.placeholder')}
+              />
+              <InputGroupAddon align="block-end">
+                <InputGroupButton
+                  variant="default"
+                  size="icon-xs"
+                  className="ml-auto rounded-full"
+                  disabled={streaming || !input.trim()}
+                  onClick={() => void send()}
+                  aria-label={streaming ? t('agent.thinking') : t('agent.send')}
+                >
+                  {streaming ? <Spinner className="size-3" /> : <ArrowUpIcon />}
+                </InputGroupButton>
+              </InputGroupAddon>
+            </InputGroup>
           </div>
         </div>
       )}

@@ -67,6 +67,50 @@ describe('regulatory engine', () => {
     expect(asean[0]?.status).toBe('restricted')
   })
 
+  it('checks limits against the total of an ingredient split across rows', () => {
+    const results = runRegulatoryChecks({
+      rows: [
+        { inci: 'Phenoxyethanol', percent: 0.6, phase: 'Water' },
+        { inci: 'phenoxyethanol', percent: 0.6, phase: 'Cool down' },
+      ],
+      markets: ['EU'],
+      productType: 'skincare',
+      rules: SEED_RULES,
+    })
+
+    expect(results[0]?.status).toBe('restricted')
+    expect(results[0]?.hits.filter((h) => h.effect === 'reduce_percent')).toHaveLength(1)
+  })
+
+  it('does not let an unknown ingredient hide a real restriction', () => {
+    const results = runRegulatoryChecks({
+      rows: [
+        { inci: 'Phenoxyethanol', percent: 1.5, phase: 'Water' },
+        { inci: 'MadeUpine', percent: 5, phase: 'Oil' },
+      ],
+      markets: ['EU'],
+      productType: 'skincare',
+      rules: SEED_RULES,
+    })
+
+    expect(results[0]?.status).toBe('restricted')
+  })
+
+  it('does not treat ingredients that merely contain "aqua" as water', () => {
+    const results = runRegulatoryChecks({
+      rows: [
+        { inci: 'Aqua', percent: 90, phase: 'Water' },
+        { inci: 'Aquaxyl', percent: 3, phase: 'Water' },
+      ],
+      markets: ['EU'],
+      productType: 'skincare',
+      rules: SEED_RULES,
+    })
+
+    expect(results[0]?.status).toBe('unknown')
+    expect(results[0]?.hits.map((h) => h.inci)).toEqual(['Aquaxyl'])
+  })
+
   it('searches ingredient rules by INCI', () => {
     const hits = searchIngredientRules('phenoxy', SEED_RULES, 'EU')
     expect(hits.length).toBeGreaterThan(0)

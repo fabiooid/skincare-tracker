@@ -65,7 +65,8 @@ Both light and dark are first-class. The theme switcher lives in the user menu a
 ## Type
 
 - **UI text:** Geist Variable (`font-sans`)
-- **Formulas, INCI, percents, agent replies:** Geist Mono (`font-mono`)
+- **Formulas, INCI, percents, money, grams:** Geist Mono (`font-mono`)
+- **Agent chat:** same as UI text. Mono is for numbers and INCI in the notebook, not for conversation.
 - Antialiased. Headings use the same family as body — no second display font.
 
 | Role | Size | Weight |
@@ -90,7 +91,7 @@ Page descriptions: `text-sm leading-relaxed text-muted-foreground`, max width `m
 - App chrome: sidebar + main. No separate page navbar.
 - Main padding: `px-4` → `sm:px-6` → `lg:px-10`, extra space at the bottom (`pb-16` / `sm:pb-20`) so the last block is not cut off
 - Content width: fluid and full-width by default, with comfortable side padding. Wide workspaces may cap at `max-w-[90rem]`. Must shrink (`min-w-0`) so nothing blows past the window.
-- Breadcrumb sits at the top of the page content (same width and padding) and scrolls with the page. Page title (`PageHeader`) follows it. The agent launcher (sparkle) sits on the right of this row.
+- Breadcrumb sits at the top of the page content (same width and padding) and scrolls with the page. Page title (`PageHeader`) follows it. The agent launcher (sparkle) sits on the right of this row. On a product page, the pin sits immediately after the last breadcrumb, and the title sits close to the tabs (`gap-2`, no extra bottom margin).
 - Vertical stacks: `gap-4` inside a section, `gap-6` on a page of cards, `gap-8` between the brief prompt and the formula below
 - Prefer `gap-*` over `space-y-*`
 
@@ -110,10 +111,11 @@ The formulator agent is app chrome, not a page and not a card on the formula ste
 - Full window: chat fills the main area; left nav stays. Collapse returns to the side pane.
 - On small screens, open goes straight to full screen (no side column).
 - Remembers closed / pane / full, like the left nav.
-- Header: title, short context line (“Working on {product}” or “Any product or stock”), expand/collapse, close.
-- Conversation uses MessageScroller, Message, Bubble, Marker, Attachment. Composer is textarea + Send at the bottom.
+- Header: title, short context line (“{product} is open · any product or stock”, or “Any product or stock” when no product is open), expand/collapse, close. The line does not imply the agent is only for the open product. Composer placeholder stays general (stock, a formula, or a new product) — not one example formula.
+- Conversation uses MessageScroller, Message, Bubble, Marker, Attachment. Chat text uses the UI font (`text-sm`, relaxed line height), not mono. Composer is shadcn `InputGroup` + `InputGroupTextarea`, with a round send arrow in the footer. Enter sends, Shift+Enter makes a new line.
 - Paid gate: same pane, `EmptyState` inside — do not hide the chrome.
 - Chat proposes stock edits, new products, and formula patches. The person accepts. Formula accept/reject stays next to the table. Stock and new-product accept/reject sit on Attachment cards in the thread.
+- If they ask what the agent can do or how to work together, it answers like a lab partner in a few short sentences: propose / accept, then the menu, then an open question. It does not dump a status report, stack FAQ lists, or lead with “draft a formula”.
 
 **Radius** (`--radius: 0.5rem`)
 

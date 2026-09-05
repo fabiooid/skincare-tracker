@@ -200,9 +200,11 @@ export function normalizeInci(inci: string): string {
   return inci.trim().toLowerCase()
 }
 
+const WATER_INCI = new Set(['aqua', 'water', 'aqua (water)', 'water (aqua)', 'aqua/water', 'water/aqua', 'eau'])
+
+/** True only for plain water — never for anything that merely contains "aqua" (e.g. Aquaxyl). */
 export function isWaterInci(inci: string): boolean {
-  const value = normalizeInci(inci)
-  return value === 'aqua' || value === 'water' || value.includes('aqua')
+  return WATER_INCI.has(normalizeInci(inci).replace(/\s+/g, ' '))
 }
 
 export const IngredientStockStatusSchema = z.enum(['in_house', 'low', 'to_buy'])
@@ -377,18 +379,50 @@ export function isPercentBalanced(rows: Pick<FormulaRow, 'percent'>[], tolerance
   return Math.abs(total - 100) <= tolerance
 }
 
-export function generateInciList(rows: FormulaRow[]): string {
-  return [...rows]
-    .sort((a, b) => b.percent - a.percent)
-    .map((row) => row.inci.trim())
-    .filter(Boolean)
-    .join(', ')
+/** Colour Index names such as "CI 77891" — listed last on an EU label. */
+export function isColorantInci(inci: string): boolean {
+  return /^ci\s?\d{5}(?:[:/]\d+)?$/i.test(inci.trim())
+}
+
+/**
+ * Merge rows that share an INCI name (case-insensitive) and sum their percentages.
+ * Used for labelling and for regulatory limits, which apply to the total, not to one row.
+ */
+export function aggregateRowsByInci<T extends Pick<FormulaRow, 'inci' | 'percent'>>(
+  rows: T[],
+): Array<T & { percent: number }> {
+  const merged = new Map<string, T & { percent: number }>()
+  for (const row of rows) {
+    const display = row.inci.trim()
+    if (!display) continue
+    const key = normalizeInci(display)
+    const existing = merged.get(key)
+    if (existing) existing.percent += row.percent
+    else merged.set(key, { ...row, inci: display, percent: row.percent })
+  }
+  return [...merged.values()]
+}
+
+/**
+ * EU-style INCI list (Reg. 1223/2009 art. 19):
+ * ingredients above 1% in descending order, then those at 1% or below
+ * (any order is allowed — we keep descending so the list is stable), colourants last.
+ * Duplicate INCI names are merged first. Wording (e.g. Fragrance → Parfum) is not rewritten
+ * here; the regulatory check flags it so the person can fix the formula row.
+ */
+export function generateInciList(rows: Pick<FormulaRow, 'inci' | 'percent'>[]): string {
+  const byPercentDesc = (a: { percent: number }, b: { percent: number }) => b.percent - a.percent
+  const merged = aggregateRowsByInci(rows)
+  const colorants = merged.filter((row) => isColorantInci(row.inci)).sort(byPercentDesc)
+  const others = merged.filter((row) => !isColorantInci(row.inci))
+  const aboveOnePercent = others.filter((row) => row.percent > 1).sort(byPercentDesc)
+  const oneOrBelow = others.filter((row) => row.percent <= 1).sort(byPercentDesc)
+  return [...aboveOnePercent, ...oneOrBelow, ...colorants].map((row) => row.inci).join(', ')
 }
 
 export function hasWaterPhase(rows: Pick<FormulaRow, 'inci' | 'phase'>[]): boolean {
   return rows.some((row) => {
-    const inci = normalizeInci(row.inci)
     const phase = normalizeInci(row.phase)
-    return inci.includes('aqua') || inci.includes('water') || phase.includes('water')
+    return isWaterInci(row.inci) || phase === 'water' || phase === 'aqueous' || phase.includes('water')
   })
 }
