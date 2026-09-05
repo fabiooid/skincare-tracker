@@ -88,7 +88,7 @@ Mastra reads `OPENAI_API_KEY` on its own. The agent is paid-only — toggle **pa
 | `npm run db:migrate` | Run Drizzle migrations |
 | `npm run db:seed` | Seed rules + demo products |
 | `npm run db:setup` | Migrate + seed |
-| `npm run test` | Domain tests and OpenAI config tests |
+| `npm run test` | Domain, OpenAI config, and agent stream tests |
 
 ## Project layout
 

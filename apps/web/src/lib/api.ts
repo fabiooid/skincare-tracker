@@ -7,6 +7,7 @@ import type {
   PurchaseSuggestion,
   TriStateFlag,
 } from '@atelier/domain'
+import { errorFromAgentFrame, splitAgentStream, textFromAgentFrame } from './agent-stream'
 
 export type Plan = 'free' | 'paid'
 export type { ProductStage, ProductClaim, TriStateFlag, IngredientOriginType }
@@ -453,29 +454,19 @@ export const api = {
     if (!reader) return
 
     const decoder = new TextDecoder()
-    const chunks: string[] = []
+    let buffer = ''
 
     while (true) {
       const { done, value } = await reader.read()
       if (done) break
-      chunks.push(decoder.decode(value, { stream: true }))
-      const buffer = chunks.join('')
-      const parts = buffer.split('\x1E')
-      chunks.length = 0
-      chunks.push(parts.pop() ?? '')
-      for (const part of parts) {
-        if (!part.trim()) continue
-        try {
-          const json = JSON.parse(part)
-          if (json.type === 'text-delta' && json.payload?.text) {
-            onChunk(json.payload.text)
-          }
-          if (json.type === 'text' && typeof json.text === 'string') {
-            onChunk(json.text)
-          }
-        } catch {
-          // ignore incomplete JSON frames
-        }
+      buffer += decoder.decode(value, { stream: true })
+      const { frames, rest } = splitAgentStream(buffer)
+      buffer = rest
+      for (const frame of frames) {
+        const streamError = errorFromAgentFrame(frame)
+        if (streamError) throw new Error(streamError)
+        const text = textFromAgentFrame(frame)
+        if (text) onChunk(text)
       }
     }
   },
