@@ -29,7 +29,7 @@ Do not invent a second visual system. Extend what is already here.
 
 Use **semantic tokens** only (`bg-background`, `text-muted-foreground`, `border-border`). Never pick a raw Tailwind color like `bg-blue-500` or `text-purple-600`.
 
-Light mode is warm paper with cool ink. Dark mode is the same idea, inverted: cool ink surfaces, light type.
+Light mode is warm paper with cool ink. Dark mode inverts it: near-neutral charcoal surfaces with just a trace of warmth (not blue-black), light type.
 
 | Token | Use for |
 |---|---|
@@ -104,7 +104,7 @@ Page descriptions: `text-sm leading-relaxed text-muted-foreground`, max width `m
 
 **Agent pane**
 
-The formulator agent is app chrome, not a page and not a card on the formula step.
+The formulator agent is named **Lab Assistant** in the UI (breadcrumb launcher, pane header, message author, paid-gate copy — every place it is named). It is app chrome, not a page and not a card on the formula step.
 
 - Closed (default): sparkle button in the breadcrumb row. Shortcut **⌘J** / **Ctrl+J**. Escape closes the pane.
 - Side pane: default `w-[22rem]` on the right of the page. Drag the left edge to resize; a handle appears on hover. Remembers width. Left nav stays. Page content shrinks.
@@ -339,7 +339,7 @@ Plain, short, calm. No hype, no emoji in product UI, no “AI-powered” languag
 
 - **Inline rename:** the workspace title is an input that looks like a heading until hover/focus (`hover:bg-muted/50`, ring on focus). Enter saves, Escape cancels, empty blur restores the old name.
 - **Remembered chrome:** sidebar collapsed, product view (cards/list), theme, language.
-- **Locked formula rows:** cannot edit, cannot delete. Show the lock icon.
+- **Locked formula rows:** cannot edit, cannot delete. Show the lock icon at the front of the ingredient name, not next to the Lock switch — the Lock column holds only the centred switch.
 - **Paid gates:** same layout, `EmptyState` inside — do not hide the panel entirely. Agent pane included.
 - **Empty regulatory / PIF / INCI:** `EmptyState` with a short next step. Do not use a numbered checklist to unlock a tab.
 

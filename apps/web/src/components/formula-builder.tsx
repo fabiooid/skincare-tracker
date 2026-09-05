@@ -214,6 +214,9 @@ export function FormulaBuilder({
                 </TableCell>
                 <TableCell className="whitespace-normal border-r border-border p-0">
                   <div className="flex h-12 items-center gap-2 pr-2">
+                    {row.locked ? (
+                      <LockIcon className="ml-3 size-3 shrink-0 text-muted-foreground" />
+                    ) : null}
                     <Input
                       className="h-12 min-w-0 flex-1 rounded-none border-0 bg-transparent px-3 shadow-none focus-visible:bg-background focus-visible:ring-0 dark:bg-transparent"
                       value={row.inci}
@@ -245,7 +248,6 @@ export function FormulaBuilder({
                     checked={row.locked}
                     onCheckedChange={(checked) => updateRow(row.id, { locked: checked })}
                   />
-                  {row.locked ? <LockIcon className="ml-1 inline size-3 text-muted-foreground" /> : null}
                 </TableCell>
                 <TableCell className="text-center">
                   <Button
