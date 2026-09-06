@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom'
-import { cn } from '@/lib/utils'
+import { Meter, MeterIndicator, MeterLabel, MeterTrack } from '@/components/ui/meter'
 
 export function SimpleBarChart({
   items,
@@ -17,26 +17,42 @@ export function SimpleBarChart({
   }
 
   return (
-    <div className="-mx-1 flex flex-col">
+    <div className="-mx-2 flex flex-col">
       {items.map((item) => {
+        const priced = item.value > 0
+
         const inner = (
-          <>
-            <div className="flex items-center justify-between gap-3 text-sm">
-              <span className="min-w-0 truncate font-medium tracking-tight">{item.label}</span>
-              <span className="shrink-0 font-mono tabular-nums">
-                {formatValue ? formatValue(item.value) : item.value}
-              </span>
+          <Meter
+            className="flex-row items-center gap-4"
+            max={max || 1}
+            value={item.value}
+          >
+            <div className="w-50 flex-none">
+              <MeterLabel
+                className={priced ? undefined : 'text-muted-foreground'}
+              >
+                {item.label}
+              </MeterLabel>
+              {item.hint ? (
+                <span className="block text-xs text-muted-foreground">
+                  {item.hint}
+                </span>
+              ) : null}
             </div>
-            {item.hint ? <p className="mt-0.5 text-xs text-muted-foreground">{item.hint}</p> : null}
-            <div className="mt-1.5 h-2 overflow-hidden rounded-full bg-muted">
-              <div
-                className="h-full rounded-full bg-foreground/70"
-                style={{
-                  width: `${max > 0 && item.value > 0 ? Math.max((item.value / max) * 100, 6) : 0}%`,
-                }}
+            <MeterTrack className="flex-1">
+              <MeterIndicator
+                className={priced ? 'min-w-[6%]' : undefined}
+                variant={priced ? 'default' : 'muted'}
               />
-            </div>
-          </>
+            </MeterTrack>
+            <span
+              className={`w-32 flex-none text-right font-mono text-sm tabular-nums${
+                priced ? '' : ' text-muted-foreground'
+              }`}
+            >
+              {formatValue ? formatValue(item.value) : item.value}
+            </span>
+          </Meter>
         )
 
         if (item.href) {
@@ -52,7 +68,7 @@ export function SimpleBarChart({
         }
 
         return (
-          <div key={item.label} className={cn('px-2 py-2.5')}>
+          <div key={item.label} className="px-2 py-2.5">
             {inner}
           </div>
         )
